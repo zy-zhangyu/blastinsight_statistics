@@ -19,6 +19,14 @@ async function getAllSuccessfulTransactions(address) {
         const response = await axios.get(BASE_URL, { params });
         if (response.data.status === '1') {
             const transactions = response.data.result;
+            // 如果 transactions 为空，直接返回空的成功交易数组和计数为 0 的对象
+            if (!transactions || transactions.length === 0) {
+                console.log("No transactions found.");
+                return {
+                    successfulTransactions: [],
+                    successfulTransactionsCount: 0
+                };
+            }
             const successfulTransactions = transactions.filter(transaction => transaction.txreceipt_status === '1'); // 获取成功的交易
             const successfulTransactionsValue = successfulTransactions.map(transaction => parseFloat(transaction.value) / 10 ** 18); // 提取每笔成功交易的交易价值
 
@@ -49,14 +57,21 @@ async function calculateTotalValueOfTransactions(address) {
     const { successfulTransactions, successfulTransactionsCount } = await getAllSuccessfulTransactions(address);
     let totalValue = 0;
 
+    // 如果 successfulTransactions 是 undefined，则直接返回结果
+    if (!successfulTransactions) {
+        console.log("No successful transactions found.");
+        return { totalValue: 0, transactionsucessnumber: successfulTransactionsCount };
+    }
+
     successfulTransactions.forEach(transaction => {
         const ethValue = parseFloat(transaction.value) / 10 ** 18;
         totalValue += ethValue;
-        console.log(totalValue)
+        console.log(totalValue);
     });
 
     return { totalValue, transactionsucessnumber: successfulTransactionsCount };
 }
+
 
 
 async function getEthBalance(address) {
@@ -527,6 +542,69 @@ async function getTransactionsPerMonth(address, firstTransactionTimestamp, curre
 
     return transactionsPerMonth;
 }
+async function getAllSuccessfulTransactions(address) {
+    const BASE_URL = "https://api-sepolia.blastscan.io/api";
+    const params = {
+        module: "account",
+        action: "txlist",
+        address: address,
+        startblock: 0,
+        endblock: 'latest',
+        page: 1,
+        offset: 10000,
+        sort: 'asc',
+        apikey: API_KEY
+    };
+
+    try {
+        const response = await axios.get(BASE_URL, { params });
+        if (response.data.status === '1') {
+            const transactions = response.data.result;
+            return transactions.filter(transaction => transaction.txreceipt_status === '1'); // 获取成功的交易
+        } else {
+            console.error("Error fetching transactions:", response.data.message);
+            return [];
+        }
+    } catch (error) {
+        console.error("Failed to fetch transactions:", error);
+        return [];
+    }
+}
+
+async function calculateDailyTransactions(address) {
+    const transactions = await getAllSuccessfulTransactions(address);
+    console.log("Transactions:", transactions); // 添加调试输出
+    const dailyStats = {};
+    const startDate = new Date('2024-01-01');
+    const endDate = new Date(); // 获取当前日期作为结束日期
+
+    // 如果 transactions 是 undefined 或者空数组，直接返回空的 dailyStats
+    if (!transactions || transactions.length === 0) {
+        return dailyStats;
+    }
+
+    // 循环遍历从起始日期到结束日期的每一天
+    for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+        const dayKey = date.toLocaleDateString();
+        if (!dailyStats[dayKey]) {
+            dailyStats[dayKey] = {
+                transactions: 0
+            };
+        }
+    }
+
+    transactions.forEach(transaction => {
+        const txDate = new Date(transaction.timeStamp * 1000);
+        const dayKey = txDate.toLocaleDateString(); // 使用交易日期作为键值
+        if (dailyStats[dayKey]) {
+            dailyStats[dayKey].transactions++;
+        }
+    });
+
+    return dailyStats;
+}
+
+
 
 
 (async () => {
@@ -566,4 +644,57 @@ async function getTransactionsPerMonth(address, firstTransactionTimestamp, curre
     document.getElementById("lastMonthTxCount").innerText = lastMonthTxCount;
     document.getElementById("lastYearTxCount").innerText = lastYearTxCount;
     document.getElementById("averageTxInternal").innerText = averageTxInternal;
+
+
+    const dailyStats = await calculateDailyTransactions(address);
+
+    // 准备数据
+    const days = Object.keys(dailyStats);
+    const transactionsData = Object.values(dailyStats).map(day => day.transactions);
+
+    // 创建 Chart.js 实例
+    const ctx = document.getElementById('myChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line', // 使用曲线图
+        data: {
+            labels: days, // 使用日期数组作为标签
+            datasets: [
+                {
+                    data: transactionsData,
+                    borderColor: 'blue',
+                    fill: false, // 不填充区域
+                },
+            ],
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: false // 不显示图例
+                },
+            },
+            scales: {
+                x: {
+                    display: false, // 不显示横坐标
+                },
+                y: {
+                    display: false, // 不显示纵坐标
+                },
+            },
+            elements: {
+                point: {
+                    radius: 0 // 设置点的大小为0，即不显示点
+                },
+            },
+            layout: {
+                padding: {
+                    top: 10,
+                    bottom: 10,
+                    left: 10,
+                    right: 10
+                }
+            },
+            responsive: true, // 允许响应式调整大小
+            maintainAspectRatio: true // 不维持纵横比
+        },
+    });
 })();
