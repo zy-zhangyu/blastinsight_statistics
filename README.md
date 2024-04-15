@@ -1,0 +1,2 @@
+# blastinsight_statistics
+blastinsight中的统计量statistics共16个函数
