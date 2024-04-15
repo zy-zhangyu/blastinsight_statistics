@@ -587,6 +587,25 @@ async function calculateDailyTransactions(address) {
 
     return dailyStats;
 }
+async function getTotalSentAmount(address) {
+    try {
+        const { successfulTransactions } = await getAllSuccessfulTransactions(address);
+
+        // 计算所有成功交易中转出的资金总量
+        const totalSentAmount = successfulTransactions.reduce((total, transaction) => {
+            // 只考虑转出的交易
+            if (transaction.from.toLowerCase() === address.toLowerCase()) {
+                total += parseFloat(transaction.value) / 10 ** 18;
+            }
+            return total;
+        }, 0);
+
+        return totalSentAmount;
+    } catch (error) {
+        console.error("Failed to calculate total sent amount:", error);
+        return 0;
+    }
+}
 
 
 
@@ -611,7 +630,7 @@ async function calculateDailyTransactions(address) {
     const lastMonthTxCount = await getSuccessfulTransactionCountLastMonth(address);
     const lastYearTxCount = await getSuccessfulTransactionCountLastYear(address);
     const averageTxInternal = await getAverageTransactionsPerMonth(address);
-
+    const totalSentAmount = getTotalSentAmount(address);
     document.getElementById("balance").innerText = removeTrailingZeros(balance.toFixed(6));
     document.getElementById("balanceusd").innerText = removeTrailingZeros(balanceUsd.toFixed(2));
     document.getElementById("totalvalue").innerText = removeTrailingZeros(totalValue.toFixed(4));
@@ -627,6 +646,16 @@ async function calculateDailyTransactions(address) {
     document.getElementById("lastMonthTxCount").innerText = removeTrailingZeros(lastMonthTxCount);
     document.getElementById("lastYearTxCount").innerText = removeTrailingZeros(lastYearTxCount);
     document.getElementById("averageTxInternal").innerText = removeTrailingZeros(averageTxInternal);
+    const id1 = document.getElementById("id1");
+    const id2 = document.getElementById("id2");
+
+    if (totalSentAmount > 1 && totalSentAmount < 100) {
+        id1.textContent = "Middle Activity";
+        id2.textContent = "This wallet has total spendings of less than $100";
+    } else if (totalSentAmount > 100) {
+        id1.textContent = "Active User";
+        id2.textContent = "This wallet has total spendings of more than $100";
+    }
 
 
     const dailyStats = await calculateDailyTransactions(address);
