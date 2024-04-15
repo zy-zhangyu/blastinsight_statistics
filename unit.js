@@ -632,6 +632,7 @@ async function getTotalSentAmount(address) {
     const averageTxInternal = await getAverageTransactionsPerMonth(address);
     const totalSentAmount = getTotalSentAmount(address);
     document.getElementById("balance").innerText = removeTrailingZeros(balance.toFixed(6));
+    document.getElementById("tokens").innerText = removeTrailingZeros(balance.toFixed(6));
     document.getElementById("balanceusd").innerText = removeTrailingZeros(balanceUsd.toFixed(2));
     document.getElementById("totalvalue").innerText = removeTrailingZeros(totalValue.toFixed(4));
     document.getElementById("totalvalueusd").innerText = removeTrailingZeros(totalValueusd.toFixed(2));
