@@ -427,9 +427,9 @@ async function getSuccessfulTransactionCountLastYear(address) {
 async function getAverageTransactionsPerMonth(address) {
     try {
         // 获取第一笔交易的时间戳和月份
-        const { firstTransactionTimestamp, firstTransactionMonth } = await getFirstTransactionInfo(address);
+        const { firstTransactionDate, firstTransactionMonth } = await getFirstTransactionInfo(address);
 
-        if (firstTransactionTimestamp === 0) {
+        if (!firstTransactionDate) {
             console.error("Failed to get first transaction information.");
             return 0;
         }
@@ -438,7 +438,7 @@ async function getAverageTransactionsPerMonth(address) {
         const currentMonth = new Date().getMonth() + 1; // JavaScript中月份从0开始，因此需要加1
 
         // 统计每个月的交易成功数量
-        const transactionsPerMonth = await getTransactionsPerMonth(address, firstTransactionTimestamp, currentMonth);
+        const transactionsPerMonth = await getTransactionsPerMonth(address, firstTransactionDate, currentMonth);
 
         // 计算平均每月的交易成功数量
         const totalMonths = currentMonth - firstTransactionMonth + 1; // 加1是因为包括第一个月
@@ -452,7 +452,7 @@ async function getAverageTransactionsPerMonth(address) {
     }
 }
 
-// 获取第一笔交易的时间戳和月份
+
 async function getFirstTransactionInfo(address) {
     try {
         // 使用区块链 API 获取指定地址的第一笔交易
@@ -471,20 +471,23 @@ async function getFirstTransactionInfo(address) {
         const response = await axios.get(BASE_URL, { params });
 
         if (response.data.status === '1' && response.data.result.length > 0) {
-            // 获取第一笔交易的时间戳和月份
+            // 获取第一笔交易的时间戳
             const firstTransactionTimestamp = parseInt(response.data.result[0].timeStamp);
+            // 转换为 JavaScript 日期对象
             const firstTransactionDate = new Date(firstTransactionTimestamp * 1000);
+            // 提取月份
             const firstTransactionMonth = firstTransactionDate.getMonth() + 1; // JavaScript中月份从0开始，因此需要加1
-            return { firstTransactionTimestamp, firstTransactionMonth };
+            return { firstTransactionDate, firstTransactionMonth };
         } else {
             console.error("Error fetching first transaction:", response.data.message);
-            return { firstTransactionTimestamp: 0, firstTransactionMonth: 0 };
+            return { firstTransactionDate: null, firstTransactionMonth: 0 };
         }
     } catch (error) {
         console.error("Failed to fetch first transaction:", error);
-        return { firstTransactionTimestamp: 0, firstTransactionMonth: 0 };
+        return { firstTransactionDate: null, firstTransactionMonth: 0 };
     }
 }
+
 
 // 统计每个月的交易成功数量
 async function getTransactionsPerMonth(address, firstTransactionTimestamp, currentMonth) {
