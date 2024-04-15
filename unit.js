@@ -19,14 +19,6 @@ async function getAllSuccessfulTransactions(address) {
         const response = await axios.get(BASE_URL, { params });
         if (response.data.status === '1') {
             const transactions = response.data.result;
-            // 如果 transactions 为空，直接返回空的成功交易数组和计数为 0 的对象
-            if (!transactions || transactions.length === 0) {
-                console.log("No transactions found.");
-                return {
-                    successfulTransactions: [],
-                    successfulTransactionsCount: 0
-                };
-            }
             const successfulTransactions = transactions.filter(transaction => transaction.txreceipt_status === '1'); // 获取成功的交易
             const successfulTransactionsValue = successfulTransactions.map(transaction => parseFloat(transaction.value) / 10 ** 18); // 提取每笔成功交易的交易价值
 
@@ -57,21 +49,14 @@ async function calculateTotalValueOfTransactions(address) {
     const { successfulTransactions, successfulTransactionsCount } = await getAllSuccessfulTransactions(address);
     let totalValue = 0;
 
-    // 如果 successfulTransactions 是 undefined，则直接返回结果
-    if (!successfulTransactions) {
-        console.log("No successful transactions found.");
-        return { totalValue: 0, transactionsucessnumber: successfulTransactionsCount };
-    }
-
     successfulTransactions.forEach(transaction => {
         const ethValue = parseFloat(transaction.value) / 10 ** 18;
         totalValue += ethValue;
-        console.log(totalValue);
+        console.log(totalValue)
     });
 
-    return { totalValue, transactionsucessnumber: successfulTransactionsCount };
+    return { totalValue, transactionsucessnumber: totalValue, successfulTransactionsCount };
 }
-
 
 
 async function getEthBalance(address) {
@@ -442,9 +427,9 @@ async function getSuccessfulTransactionCountLastYear(address) {
 async function getAverageTransactionsPerMonth(address) {
     try {
         // 获取第一笔交易的时间戳和月份
-        const { firstTransactionDate, firstTransactionMonth } = await getFirstTransactionInfo(address);
+        const { firstTransactionTimestamp, firstTransactionMonth } = await getFirstTransactionInfo(address);
 
-        if (!firstTransactionDate) {
+        if (firstTransactionTimestamp === 0) {
             console.error("Failed to get first transaction information.");
             return 0;
         }
@@ -453,7 +438,7 @@ async function getAverageTransactionsPerMonth(address) {
         const currentMonth = new Date().getMonth() + 1; // JavaScript中月份从0开始，因此需要加1
 
         // 统计每个月的交易成功数量
-        const transactionsPerMonth = await getTransactionsPerMonth(address, firstTransactionDate, currentMonth);
+        const transactionsPerMonth = await getTransactionsPerMonth(address, firstTransactionTimestamp, currentMonth);
 
         // 计算平均每月的交易成功数量
         const totalMonths = currentMonth - firstTransactionMonth + 1; // 加1是因为包括第一个月
@@ -467,7 +452,7 @@ async function getAverageTransactionsPerMonth(address) {
     }
 }
 
-
+// 获取第一笔交易的时间戳和月份
 async function getFirstTransactionInfo(address) {
     try {
         // 使用区块链 API 获取指定地址的第一笔交易
@@ -488,21 +473,20 @@ async function getFirstTransactionInfo(address) {
         if (response.data.status === '1' && response.data.result.length > 0) {
             // 获取第一笔交易的时间戳
             const firstTransactionTimestamp = parseInt(response.data.result[0].timeStamp);
-            // 转换为 JavaScript 日期对象
+            // 将时间戳转换为 Date 对象
             const firstTransactionDate = new Date(firstTransactionTimestamp * 1000);
-            // 提取月份
+            // 获取第一笔交易的月份
             const firstTransactionMonth = firstTransactionDate.getMonth() + 1; // JavaScript中月份从0开始，因此需要加1
-            return { firstTransactionDate, firstTransactionMonth };
+            return { firstTransactionTimestamp: firstTransactionDate, firstTransactionMonth };
         } else {
             console.error("Error fetching first transaction:", response.data.message);
-            return { firstTransactionDate: null, firstTransactionMonth: 0 };
+            return { firstTransactionTimestamp: 0, firstTransactionMonth: 0 };
         }
     } catch (error) {
         console.error("Failed to fetch first transaction:", error);
-        return { firstTransactionDate: null, firstTransactionMonth: 0 };
+        return { firstTransactionTimestamp: 0, firstTransactionMonth: 0 };
     }
 }
-
 
 // 统计每个月的交易成功数量
 async function getTransactionsPerMonth(address, firstTransactionTimestamp, currentMonth) {
@@ -542,7 +526,13 @@ async function getTransactionsPerMonth(address, firstTransactionTimestamp, curre
 
     return transactionsPerMonth;
 }
-async function getAllSuccessfulTransactions(address) {
+
+// 定义一个函数，用于去除小数点后面的零
+function removeTrailingZeros(number) {
+    // 转换为字符串，并去除尾部的零和小数点
+    return parseFloat(number).toString();
+}
+async function getAllSuccessfulTransactionsPicture(address) {
     const BASE_URL = "https://api-sepolia.blastscan.io/api";
     const params = {
         module: "account",
@@ -572,16 +562,10 @@ async function getAllSuccessfulTransactions(address) {
 }
 
 async function calculateDailyTransactions(address) {
-    const transactions = await getAllSuccessfulTransactions(address);
-    console.log("Transactions:", transactions); // 添加调试输出
+    const transactions = await getAllSuccessfulTransactionsPicture(address);
     const dailyStats = {};
     const startDate = new Date('2024-01-01');
     const endDate = new Date(); // 获取当前日期作为结束日期
-
-    // 如果 transactions 是 undefined 或者空数组，直接返回空的 dailyStats
-    if (!transactions || transactions.length === 0) {
-        return dailyStats;
-    }
 
     // 循环遍历从起始日期到结束日期的每一天
     for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
@@ -603,7 +587,6 @@ async function calculateDailyTransactions(address) {
 
     return dailyStats;
 }
-
 
 
 
@@ -629,21 +612,21 @@ async function calculateDailyTransactions(address) {
     const lastYearTxCount = await getSuccessfulTransactionCountLastYear(address);
     const averageTxInternal = await getAverageTransactionsPerMonth(address);
 
-    document.getElementById("balance").innerText = balance.toFixed(6);
-    document.getElementById("balanceusd").innerText = balanceUsd.toFixed(2);
-    document.getElementById("totalvalue").innerText = totalValue.toFixed(4);
-    document.getElementById("totalvalueusd").innerText = totalValueusd.toFixed(2);
-    document.getElementById("balancechangelastmonth").innerText = balanceChange.toFixed(4);
-    document.getElementById("balancechangelastyear").innerText = balanceChangeLastYear.toFixed(4);
-    document.getElementById("walletage").innerText = walletAgeInMonths;
-    document.getElementById("txsucessnumber").innerText = transactionsucessnumber;
-    document.getElementById("rejectedTxNumber").innerText = rejectedTxNumber;
-    document.getElementById("averageInterval").innerText = averageInterval.toFixed(2);
-    document.getElementById("maxInterval").innerText = maxInterval.toFixed(2);
-    document.getElementById("timesinelastTx").innerText = timesinelastTx;
-    document.getElementById("lastMonthTxCount").innerText = lastMonthTxCount;
-    document.getElementById("lastYearTxCount").innerText = lastYearTxCount;
-    document.getElementById("averageTxInternal").innerText = averageTxInternal;
+    document.getElementById("balance").innerText = removeTrailingZeros(balance.toFixed(6));
+    document.getElementById("balanceusd").innerText = removeTrailingZeros(balanceUsd.toFixed(2));
+    document.getElementById("totalvalue").innerText = removeTrailingZeros(totalValue.toFixed(4));
+    document.getElementById("totalvalueusd").innerText = removeTrailingZeros(totalValueusd.toFixed(2));
+    document.getElementById("balancechangelastmonth").innerText = removeTrailingZeros(balanceChange.toFixed(4));
+    document.getElementById("balancechangelastyear").innerText = removeTrailingZeros(balanceChangeLastYear.toFixed(4));
+    document.getElementById("walletage").innerText = removeTrailingZeros(walletAgeInMonths);
+    document.getElementById("txsucessnumber").innerText = removeTrailingZeros(transactionsucessnumber);
+    document.getElementById("rejectedTxNumber").innerText = removeTrailingZeros(rejectedTxNumber);
+    document.getElementById("averageInterval").innerText = removeTrailingZeros(averageInterval.toFixed(3));
+    document.getElementById("maxInterval").innerText = removeTrailingZeros(maxInterval.toFixed(3));
+    document.getElementById("timesinelastTx").innerText = removeTrailingZeros(timesinelastTx.toFixed(3));
+    document.getElementById("lastMonthTxCount").innerText = removeTrailingZeros(lastMonthTxCount);
+    document.getElementById("lastYearTxCount").innerText = removeTrailingZeros(lastYearTxCount);
+    document.getElementById("averageTxInternal").innerText = removeTrailingZeros(averageTxInternal);
 
 
     const dailyStats = await calculateDailyTransactions(address);
