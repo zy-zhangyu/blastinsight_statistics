@@ -34,6 +34,38 @@
     <span id="id2"></span>
 
 
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const ratingPageButton = document.getElementById('rating_score');
+
+            ratingPageButton.addEventListener('click', async () => {
+                // 检查钱包是否连接
+                const walletConnected = await isWalletConnected();
+
+                if (walletConnected) {
+                    // 如果钱包已连接，则跳转到下一个页面
+                    window.location.href = './Statistics';
+                } else {
+                    // 如果钱包未连接，则弹出警告提示用户先连接钱包
+                    alert('Please connect your wallet first!');
+                }
+            });
+
+            // 检查 web3 是否初始化的函数
+            async function isWalletConnected() {
+                if (window.ethereum && window.ethereum.isMetaMask) {
+                    // 如果是 MetaMask，使用 ethereum.request 方法获取账户
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    return accounts && accounts.length > 0;
+                } else {
+                    // 如果不是 MetaMask，检查 web3 是否已经初始化
+                    return typeof web3 !== 'undefined' && await web3.eth.getAccounts().then(accounts => accounts.length > 0).catch(() => false);
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -285,8 +285,12 @@ async function getTransactionIntervals(address) {
                 const interval = timestamps[i] - timestamps[i - 1];
                 timeIntervals.push(interval);
             }
-
-            const averageInterval = timeIntervals.reduce((sum, interval) => sum + interval, 0) / (timeIntervals.length - 1);
+            let averageInterval;
+            if (timeIntervals.length <= 1) {
+                averageInterval = 0;
+            } else {
+                averageInterval = timeIntervals.reduce((sum, interval) => sum + interval, 0) / (timeIntervals.length - 1);
+            }
             const maxInterval = Math.max(...timeIntervals);
 
             return { averageInterval: averageInterval / (60 * 60), maxInterval: maxInterval / (60 * 60) }; // Convert to hours
@@ -711,3 +715,9 @@ async function getTotalSentAmount(address) {
         },
     });
 })();
+
+
+
+
+
+
