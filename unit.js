@@ -84,8 +84,8 @@ async function getEthBalance(address) {
 }
 async function getTokenToUsdRate(token_id) {
     try {
-        const tokenToEthRateResponse = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${token_id}&vs_currencies=eth`);
-        const tokenToEthRate = tokenToEthRateResponse.data[token_id].eth;
+        const tokenToEthRateResponse = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${token_id}&vs_currencies=usd`);
+        const tokenToEthRate = tokenToEthRateResponse.data[token_id].usd;
         console.log(tokenToEthRate)
         return tokenToEthRate;
     } catch (error) {
@@ -612,30 +612,30 @@ async function getTotalSentAmount(address) {
 }
 
 
-async function getTokenBalance(address, contractAddress) {
-    const BASE_URL = "https://api.blastscan.io/api";
-    const params = {
-        module: "account",
-        action: "tokenbalance",
-        contractaddress: contractAddress,
-        address: address,
-        tag: 'latest',
-        apikey: API_KEY // 请替换为你自己的 API 密钥
-    };
+// async function getTokenBalance(address, contractAddress) {
+//     const BASE_URL = "https://api.blastscan.io/api";
+//     const params = {
+//         module: "account",
+//         action: "tokenbalance",
+//         contractaddress: contractAddress,
+//         address: address,
+//         tag: 'latest',
+//         apikey: API_KEY // 请替换为你自己的 API 密钥
+//     };
 
-    try {
-        const response = await axios.get(BASE_URL, { params });
-        if (response.data.status === '1') {
-            return response.data.result;
-        } else {
-            console.error("Error fetching token balance:", response.data.message);
-            return null;
-        }
-    } catch (error) {
-        console.error("Failed to fetch token balance:", error);
-        return null;
-    }
-}
+//     try {
+//         const response = await axios.get(BASE_URL, { params });
+//         if (response.data.status === '1') {
+//             return response.data.result;
+//         } else {
+//             console.error("Error fetching token balance:", response.data.message);
+//             return null;
+//         }
+//     } catch (error) {
+//         console.error("Failed to fetch token balance:", error);
+//         return null;
+//     }
+// }
 
 (async () => {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -643,9 +643,10 @@ async function getTokenBalance(address, contractAddress) {
 
     const { totalValue, transactionsucessnumber } = await calculateTotalValueOfTransactions(address);
     const balance = await getEthBalance(address);
-    const ethToUsdRate = await getTokenToUsdRate('usdb');
-    const totalValueusd = totalValue / ethToUsdRate;
-    const balanceUsd = balance / ethToUsdRate;
+    const ethToUsdRate = await getTokenToUsdRate('ethereum');
+    console.log("ethToUsdRate" + ethToUsdRate)
+    const totalValueusd = totalValue * ethToUsdRate;
+    const balanceUsd = balance * ethToUsdRate;
     const balanceChange = await getBalanceChange(address);
     const successfulTransactionsLastYear = await getAllSuccessfulTransactionsLastYear(address);
     const balanceChangeLastYear = successfulTransactionsLastYear.reduce((total, transaction) => {
@@ -659,7 +660,7 @@ async function getTokenBalance(address, contractAddress) {
     const lastYearTxCount = await getSuccessfulTransactionCountLastYear(address);
     const averageTxInternal = await getAverageTransactionsPerMonth(address);
     const totalSentAmount = getTotalSentAmount(address);
-    //WETH
+    // WETH
     // const balanceofWETH = await getTokenBalance(address, "0x4300000000000000000000000000000000000004")
     // const balanceofUSDB = await getTokenBalance(address, "0x4300000000000000000000000000000000000003")
     // const balanceofORBIT = await getTokenBalance(address, "0x42E12D42b3d6C4A74a88A61063856756Ea2DB357")
@@ -671,7 +672,6 @@ async function getTokenBalance(address, contractAddress) {
 
 
     document.getElementById("balance").innerText = removeTrailingZeros(balance.toFixed(6));
-    document.getElementById("tokens").innerText = removeTrailingZeros(balance.toFixed(6));
     document.getElementById("balanceusd").innerText = removeTrailingZeros(balanceUsd.toFixed(2));
     document.getElementById("totalvalue").innerText = removeTrailingZeros(totalValue.toFixed(4));
     document.getElementById("totalvalueusd").innerText = removeTrailingZeros(totalValueusd.toFixed(2));
