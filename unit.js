@@ -537,7 +537,7 @@ function removeTrailingZeros(number) {
     return parseFloat(number).toString();
 }
 async function getAllSuccessfulTransactionsPicture(address) {
-    const BASE_URL = "https://api-sepolia.blastscan.io/api";
+    const BASE_URL = "https://api.blastscan.io/api";
     const params = {
         module: "account",
         action: "txlist",
@@ -612,6 +612,30 @@ async function getTotalSentAmount(address) {
 }
 
 
+async function getTokenBalance(address, contractAddress) {
+    const BASE_URL = "https://api.blastscan.io/api";
+    const params = {
+        module: "account",
+        action: "tokenbalance",
+        contractaddress: contractAddress,
+        address: address,
+        tag: 'latest',
+        apikey: API_KEY // 请替换为你自己的 API 密钥
+    };
+
+    try {
+        const response = await axios.get(BASE_URL, { params });
+        if (response.data.status === '1') {
+            return response.data.result;
+        } else {
+            console.error("Error fetching token balance:", response.data.message);
+            return null;
+        }
+    } catch (error) {
+        console.error("Failed to fetch token balance:", error);
+        return null;
+    }
+}
 
 (async () => {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -635,6 +659,17 @@ async function getTotalSentAmount(address) {
     const lastYearTxCount = await getSuccessfulTransactionCountLastYear(address);
     const averageTxInternal = await getAverageTransactionsPerMonth(address);
     const totalSentAmount = getTotalSentAmount(address);
+    //WETH
+    const balanceofWETH = await getTokenBalance(address, "0x4300000000000000000000000000000000000004")
+    const balanceofUSDB = await getTokenBalance(address, "0x4300000000000000000000000000000000000003")
+    const balanceofORBIT = await getTokenBalance(address, "0x42E12D42b3d6C4A74a88A61063856756Ea2DB357")
+    const balanceofezETH = await getTokenBalance(address, "0x42E12D42b3d6C4A74a88A61063856756Ea2DB357")
+    console.log("balanceofWETH:" + balanceofWETH)
+    console.log("balanceofUSDB:" + balanceofUSDB)
+    console.log("balanceofORBIT:" + balanceofORBIT)
+    console.log("balanceofezETH:" + balanceofezETH)
+
+
     document.getElementById("balance").innerText = removeTrailingZeros(balance.toFixed(6));
     document.getElementById("tokens").innerText = removeTrailingZeros(balance.toFixed(6));
     document.getElementById("balanceusd").innerText = removeTrailingZeros(balanceUsd.toFixed(2));
@@ -653,6 +688,11 @@ async function getTotalSentAmount(address) {
     document.getElementById("averageTxInternal").innerText = removeTrailingZeros(averageTxInternal);
     const id1 = document.getElementById("id1");
     const id2 = document.getElementById("id2");
+    document.getElementById("balanceofWETH").innerText = removeTrailingZeros(balanceofWETH.toFixed(6));
+    document.getElementById("balanceofUSDB").innerText = removeTrailingZeros(balanceofUSDB.toFixed(6));
+    document.getElementById("balanceofORBIT").innerText = removeTrailingZeros(balanceofORBIT.toFixed(6));
+    document.getElementById("balanceofezETH").innerText = removeTrailingZeros(balanceofezETH.toFixed(6));
+
 
     if (totalSentAmount > 1 && totalSentAmount < 100) {
         id1.textContent = "Middle Activity";
