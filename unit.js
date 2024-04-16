@@ -660,14 +660,14 @@ async function getTokenBalance(address, contractAddress) {
     const averageTxInternal = await getAverageTransactionsPerMonth(address);
     const totalSentAmount = getTotalSentAmount(address);
     //WETH
-    const balanceofWETH = await getTokenBalance(address, "0x4300000000000000000000000000000000000004")
-    const balanceofUSDB = await getTokenBalance(address, "0x4300000000000000000000000000000000000003")
-    const balanceofORBIT = await getTokenBalance(address, "0x42E12D42b3d6C4A74a88A61063856756Ea2DB357")
-    const balanceofezETH = await getTokenBalance(address, "0x42E12D42b3d6C4A74a88A61063856756Ea2DB357")
-    console.log("balanceofWETH:" + balanceofWETH)
-    console.log("balanceofUSDB:" + balanceofUSDB)
-    console.log("balanceofORBIT:" + balanceofORBIT)
-    console.log("balanceofezETH:" + balanceofezETH)
+    // const balanceofWETH = await getTokenBalance(address, "0x4300000000000000000000000000000000000004")
+    // const balanceofUSDB = await getTokenBalance(address, "0x4300000000000000000000000000000000000003")
+    // const balanceofORBIT = await getTokenBalance(address, "0x42E12D42b3d6C4A74a88A61063856756Ea2DB357")
+    // const balanceofezETH = await getTokenBalance(address, "0x42E12D42b3d6C4A74a88A61063856756Ea2DB357")
+    // console.log("balanceofWETH:" + balanceofWETH)
+    // console.log("balanceofUSDB:" + balanceofUSDB)
+    // console.log("balanceofORBIT:" + balanceofORBIT)
+    // console.log("balanceofezETH:" + balanceofezETH)
 
 
     document.getElementById("balance").innerText = removeTrailingZeros(balance.toFixed(6));
@@ -688,10 +688,10 @@ async function getTokenBalance(address, contractAddress) {
     document.getElementById("averageTxInternal").innerText = removeTrailingZeros(averageTxInternal);
     const id1 = document.getElementById("id1");
     const id2 = document.getElementById("id2");
-    document.getElementById("balanceofWETH").innerText = removeTrailingZeros(balanceofWETH.toFixed(6));
-    document.getElementById("balanceofUSDB").innerText = removeTrailingZeros(balanceofUSDB.toFixed(6));
-    document.getElementById("balanceofORBIT").innerText = removeTrailingZeros(balanceofORBIT.toFixed(6));
-    document.getElementById("balanceofezETH").innerText = removeTrailingZeros(balanceofezETH.toFixed(6));
+    // document.getElementById("balanceofWETH").innerText = removeTrailingZeros(balanceofWETH.toFixed(6));
+    // document.getElementById("balanceofUSDB").innerText = removeTrailingZeros(balanceofUSDB.toFixed(6));
+    // document.getElementById("balanceofORBIT").innerText = removeTrailingZeros(balanceofORBIT.toFixed(6));
+    // document.getElementById("balanceofezETH").innerText = removeTrailingZeros(balanceofezETH.toFixed(6));
 
 
     if (totalSentAmount > 1 && totalSentAmount < 100) {
