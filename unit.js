@@ -232,7 +232,7 @@ async function getTotalRejectedTransactions(address) {
         startblock: 0,
         endblock: 'latest',
         page: 1,
-        offset: 1,
+        offset: 10000,
         sort: 'asc',
         apikey: API_KEY
     };
@@ -242,10 +242,12 @@ async function getTotalRejectedTransactions(address) {
         if (response.data.status === '1') {
             const transactions = response.data.result;
             const rejectedTransactions = transactions.filter(transaction => transaction.txreceipt_status === '0'); // 获取被拒绝的交易
+            console.log("rejectedTransactions" + rejectedTransactions)
             const totalRejectedTransactions = rejectedTransactions.length; // 计算被拒绝交易的总数
+
             return totalRejectedTransactions;
         } else {
-            console.error("Error fetching transactions:", response.data.message);
+            console.error("No fetching reject_transactions:", response.data.message);
             return 0;
         }
     } catch (error) {
@@ -263,7 +265,7 @@ async function getTransactionIntervals(address) {
         startblock: 0,
         endblock: 'latest',
         page: 1,
-        offset: 1,
+        offset: 10000,
         sort: 'asc',
         apikey: API_KEY
     };
@@ -357,7 +359,7 @@ async function getSuccessfulTransactionCountLastMonth(address) {
             startblock: 0,
             endblock: 'latest',
             page: 1,
-            offset: 1,
+            offset: 10000,
             sort: 'asc',
             apikey: API_KEY
         };
@@ -403,7 +405,7 @@ async function getSuccessfulTransactionCountLastYear(address) {
             startblock: 0,
             endblock: 'latest',
             page: 1,
-            offset: 1,
+            offset: 10000,
             sort: 'asc',
             apikey: API_KEY
         };
@@ -509,7 +511,7 @@ async function getTransactionsPerMonth(address, firstTransactionTimestamp, curre
                 startblock: 0,
                 endblock: 'latest',
                 page: 1,
-                offset: 1,
+                offset: 10000,
                 sort: 'asc',
                 starttime: startOfMonth.getTime() / 1000,
                 endtime: endOfMonth.getTime() / 1000,
@@ -545,7 +547,7 @@ async function getAllSuccessfulTransactionsPicture(address) {
         startblock: 0,
         endblock: 'latest',
         page: 1,
-        offset: 1,
+        offset: 10000,
         sort: 'asc',
         apikey: API_KEY
     };
@@ -611,32 +613,6 @@ async function getTotalSentAmount(address) {
     }
 }
 
-
-// async function getTokenBalance(address, contractAddress) {
-//     const BASE_URL = "https://api.blastscan.io/api";
-//     const params = {
-//         module: "account",
-//         action: "tokenbalance",
-//         contractaddress: contractAddress,
-//         address: address,
-//         tag: 'latest',
-//         apikey: API_KEY // 请替换为你自己的 API 密钥
-//     };
-
-//     try {
-//         const response = await axios.get(BASE_URL, { params });
-//         if (response.data.status === '1') {
-//             return response.data.result;
-//         } else {
-//             console.error("Error fetching token balance:", response.data.message);
-//             return null;
-//         }
-//     } catch (error) {
-//         console.error("Failed to fetch token balance:", error);
-//         return null;
-//     }
-// }
-
 (async () => {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     const address = accounts[0];
@@ -661,15 +637,6 @@ async function getTotalSentAmount(address) {
     const averageTxInternal = await getAverageTransactionsPerMonth(address);
     const totalSentAmount = await getTotalSentAmount(address);
     console.log("totalSentAmount" + totalSentAmount)
-    // WETH
-    // const balanceofWETH = await getTokenBalance(address, "0x4300000000000000000000000000000000000004")
-    // const balanceofUSDB = await getTokenBalance(address, "0x4300000000000000000000000000000000000003")
-    // const balanceofORBIT = await getTokenBalance(address, "0x42E12D42b3d6C4A74a88A61063856756Ea2DB357")
-    // const balanceofezETH = await getTokenBalance(address, "0x42E12D42b3d6C4A74a88A61063856756Ea2DB357")
-    // console.log("balanceofWETH:" + balanceofWETH)
-    // console.log("balanceofUSDB:" + balanceofUSDB)
-    // console.log("balanceofORBIT:" + balanceofORBIT)
-    // console.log("balanceofezETH:" + balanceofezETH)
 
 
     document.getElementById("balance").innerText = removeTrailingZeros(balance.toFixed(6));
@@ -689,11 +656,6 @@ async function getTotalSentAmount(address) {
     document.getElementById("averageTxInternal").innerText = removeTrailingZeros(averageTxInternal);
     const id1 = document.getElementById("id1");
     const id2 = document.getElementById("id2");
-    // document.getElementById("balanceofWETH").innerText = removeTrailingZeros(balanceofWETH.toFixed(6));
-    // document.getElementById("balanceofUSDB").innerText = removeTrailingZeros(balanceofUSDB.toFixed(6));
-    // document.getElementById("balanceofORBIT").innerText = removeTrailingZeros(balanceofORBIT.toFixed(6));
-    // document.getElementById("balanceofezETH").innerText = removeTrailingZeros(balanceofezETH.toFixed(6));
-
 
     if (totalSentAmount > 1 && totalSentAmount < 100) {
         id1.textContent = "Middle Activity";
