@@ -55,7 +55,7 @@ async function calculateTotalValueOfTransactions(address) {
         // console.log(totalValue)
     });
 
-    return { totalValue, transactionsucessnumber: totalValue, successfulTransactionsCount };
+    return { totalValue, successfulTransactionsCount: totalValue, successfulTransactionsCount };
 }
 
 
@@ -136,7 +136,7 @@ async function getAllSuccessfulTransactionsLastYear(address) {
     try {
         // 计算起止时间戳
         const today = new Date();
-        const endTimestamp = Math.floor(today / 1000); // 当前时间的时间戳
+        const endTimestamp = Math.floor(today.getTime() / 1000); // 当前时间的时间戳
         const startTimestamp = endTimestamp - (365 * 24 * 60 * 60); // 当前时间向前推 365 天的时间戳
 
         // 使用 Blast API 获取在过去一年内的所有交易
@@ -171,6 +171,7 @@ async function getAllSuccessfulTransactionsLastYear(address) {
         return [];
     }
 }
+
 
 async function getBalanceChange(address) {
     try {
@@ -618,7 +619,7 @@ async function getTotalSentAmount(address) {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     const address = accounts[0];
 
-    const { totalValue, transactionsucessnumber } = await calculateTotalValueOfTransactions(address);
+    const { totalValue, successfulTransactionsCount } = await calculateTotalValueOfTransactions(address);
     const balance = await getEthBalance(address);
     const ethToUsdRate = await getTokenToUsdRate('ethereum');
     // console.log("ethToUsdRate" + ethToUsdRate)
@@ -647,7 +648,7 @@ async function getTotalSentAmount(address) {
     document.getElementById("balancechangelastmonth").innerText = removeTrailingZeros(balanceChange.toFixed(4));
     document.getElementById("balancechangelastyear").innerText = removeTrailingZeros(balanceChangeLastYear.toFixed(4));
     document.getElementById("walletage").innerText = removeTrailingZeros(walletAgeInMonths);
-    document.getElementById("txsucessnumber").innerText = removeTrailingZeros(transactionsucessnumber);
+    document.getElementById("txsucessnumber").innerText = removeTrailingZeros(successfulTransactionsCount);
     document.getElementById("rejectedTxNumber").innerText = removeTrailingZeros(rejectedTxNumber);
     document.getElementById("averageInterval").innerText = removeTrailingZeros(averageInterval.toFixed(3));
     document.getElementById("maxInterval").innerText = removeTrailingZeros(maxInterval.toFixed(3));
