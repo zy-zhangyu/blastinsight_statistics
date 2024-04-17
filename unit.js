@@ -660,6 +660,7 @@ async function getTotalSentAmount(address) {
     const lastYearTxCount = await getSuccessfulTransactionCountLastYear(address);
     const averageTxInternal = await getAverageTransactionsPerMonth(address);
     const totalSentAmount = getTotalSentAmount(address);
+    console.log("totalSentAmount" + totalSentAmount)
     // WETH
     // const balanceofWETH = await getTokenBalance(address, "0x4300000000000000000000000000000000000004")
     // const balanceofUSDB = await getTokenBalance(address, "0x4300000000000000000000000000000000000003")
