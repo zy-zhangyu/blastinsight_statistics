@@ -22,7 +22,7 @@ async function getAllSuccessfulTransactions(address) {
             const successfulTransactions = transactions.filter(transaction => transaction.txreceipt_status === '1'); // 获取成功的交易
             const successfulTransactionsValue = successfulTransactions.map(transaction => parseFloat(transaction.value) / 10 ** 18); // 提取每笔成功交易的交易价值
 
-            console.log("successfulTransactionsValue", successfulTransactionsValue);
+            // console.log("successfulTransactionsValue", successfulTransactionsValue);
             return {
                 successfulTransactions: successfulTransactions,
                 successfulTransactionsCount: successfulTransactions.length
@@ -52,7 +52,7 @@ async function calculateTotalValueOfTransactions(address) {
     successfulTransactions.forEach(transaction => {
         const ethValue = parseFloat(transaction.value) / 10 ** 18;
         totalValue += ethValue;
-        console.log(totalValue)
+        // console.log(totalValue)
     });
 
     return { totalValue, transactionsucessnumber: totalValue, successfulTransactionsCount };
@@ -86,7 +86,7 @@ async function getTokenToUsdRate(token_id) {
     try {
         const tokenToEthRateResponse = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${token_id}&vs_currencies=usd`);
         const tokenToEthRate = tokenToEthRateResponse.data[token_id].usd;
-        console.log(tokenToEthRate)
+        // console.log(tokenToEthRate)
         return tokenToEthRate;
     } catch (error) {
         console.error("Failed to fetch token to USD rate:", error);
@@ -242,16 +242,16 @@ async function getTotalRejectedTransactions(address) {
         if (response.data.status === '1') {
             const transactions = response.data.result;
             const rejectedTransactions = transactions.filter(transaction => transaction.txreceipt_status === '0'); // 获取被拒绝的交易
-            console.log("rejectedTransactions" + rejectedTransactions)
+            // console.log("rejectedTransactions" + rejectedTransactions)
             const totalRejectedTransactions = rejectedTransactions.length; // 计算被拒绝交易的总数
 
             return totalRejectedTransactions;
         } else {
-            console.error("No fetching reject_transactions:", response.data.message);
+            // console.error("No fetching reject_transactions:", response.data.message);
             return 0;
         }
     } catch (error) {
-        console.error("Failed to fetch transactions:", error);
+        // console.error("Failed to fetch transactions:", error);
         return 0;
     }
 }
@@ -414,19 +414,20 @@ async function getSuccessfulTransactionCountLastYear(address) {
         if (response.data.status === '1') {
             // 过滤出过去365天内的成功交易
             const transactions = response.data.result;
+            // console.log("transactions_lastyear" + transactions)
             const successfulTransactionsLastYear = transactions.filter(transaction => {
                 const timestamp = parseInt(transaction.timeStamp);
                 return timestamp >= startTimestamp && timestamp <= endTimestamp && transaction.txreceipt_status === '1';
             });
-
+            // console.log("transactions_lastyear" + successfulTransactionsLastYear)
             // 返回过去365天的成功交易数量
             return successfulTransactionsLastYear.length;
         } else {
-            console.error("Error fetching transactions:", response.data.message);
+            // console.error("Error fetching transactions:", response.data.message);
             return 0;
         }
     } catch (error) {
-        console.error("Failed to fetch transactions:", error);
+        // console.error("Failed to fetch transactions:", error);
         return 0;
     }
 }
@@ -620,7 +621,7 @@ async function getTotalSentAmount(address) {
     const { totalValue, transactionsucessnumber } = await calculateTotalValueOfTransactions(address);
     const balance = await getEthBalance(address);
     const ethToUsdRate = await getTokenToUsdRate('ethereum');
-    console.log("ethToUsdRate" + ethToUsdRate)
+    // console.log("ethToUsdRate" + ethToUsdRate)
     const totalValueusd = totalValue * ethToUsdRate;
     const balanceUsd = balance * ethToUsdRate;
     const balanceChange = await getBalanceChange(address);
@@ -636,7 +637,7 @@ async function getTotalSentAmount(address) {
     const lastYearTxCount = await getSuccessfulTransactionCountLastYear(address);
     const averageTxInternal = await getAverageTransactionsPerMonth(address);
     const totalSentAmount = await getTotalSentAmount(address);
-    console.log("totalSentAmount" + totalSentAmount)
+    // console.log("totalSentAmount" + totalSentAmount)
 
 
     document.getElementById("balance").innerText = removeTrailingZeros(balance.toFixed(6));
