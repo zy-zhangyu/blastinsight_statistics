@@ -618,10 +618,19 @@ async function getTotalSentAmount(address) {
 }
 
 (async () => {
-    // const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    // const address = accounts[0];
-    const address = "0x6BC58Daa01464c9A0a81aEa8145a335e46F24E36";
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    const address = accounts[0];
+    // const address = "0x6BC58Daa01464c9A0a81aEa8145a335e46F24E36";
+    const totalspendAmount = totalSentAmount * ethToUsdRate;
+    if (totalspendAmount > 100) {
+        id1.textContent = "Active User";
+        id2.textContent = "This wallet has total spendings of more than $100";
+        // 获取图像元素
+        const imgElement = document.getElementById('id3');
 
+        // 设置新的图片路径
+        imgElement.src = 'https://uploads-ssl.webflow.com/65bc5c072835ea18c7eb3466/661f4a302d8c1fb0ae094790_2.png';
+    }
     const { totalValue, successfulTransactionsCount } = await calculateTotalValueOfTransactions(address);
     const balance = await getEthBalance(address);
     const ethToUsdRate = await getTokenToUsdRate('ethereum');
@@ -641,7 +650,7 @@ async function getTotalSentAmount(address) {
     const lastYearTxCount = await getSuccessfulTransactionCountLastYear(address);
     const averageTxInternal = await getAverageTransactionsPerMonth(address);
     const totalSentAmount = await getTotalSentAmount(address);
-    const totalspendAmount = totalSentAmount * ethToUsdRate;
+
     // console.log("totalSentAmount: $" + totalSentAmount)
     console.log("totalspendAmount: $" + totalspendAmount)
 
@@ -665,15 +674,7 @@ async function getTotalSentAmount(address) {
     const id1 = document.getElementById("id1");
     const id2 = document.getElementById("id2");
 
-    if (totalspendAmount > 100) {
-        id1.textContent = "Active User";
-        id2.textContent = "This wallet has total spendings of more than $100";
-        // 获取图像元素
-        const imgElement = document.getElementById('id3');
 
-        // 设置新的图片路径
-        imgElement.src = 'https://uploads-ssl.webflow.com/65bc5c072835ea18c7eb3466/661f4a302d8c1fb0ae094790_2.png';
-    }
 
 
     const dailyStats = await calculateDailyTransactions(address);
