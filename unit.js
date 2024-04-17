@@ -86,12 +86,14 @@ async function getEthBalance(address) {
 }
 async function getTokenToUsdRate(token_id) {
     try {
-        const tokenToEthRateResponse = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${token_id}&vs_currencies=usd`);
-        const tokenToEthRate = tokenToEthRateResponse.data[token_id].usd;
-        // console.log(tokenToEthRate)
-        return tokenToEthRate;
+        const response = await fetch(`https://blastinsight-service.zeabur.app/user/${token_id}/getusd`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch USD rate for the token');
+        }
+        const data = await response.json();
+        return data.usdRate;
     } catch (error) {
-        console.error("Failed to fetch token to USD rate:", error);
+        console.error('Error:', error);
         return 0;
     }
 }
