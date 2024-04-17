@@ -232,7 +232,7 @@ async function getTotalRejectedTransactions(address) {
         startblock: 0,
         endblock: 'latest',
         page: 1,
-        offset: 10000,
+        offset: 1,
         sort: 'asc',
         apikey: API_KEY
     };
@@ -263,7 +263,7 @@ async function getTransactionIntervals(address) {
         startblock: 0,
         endblock: 'latest',
         page: 1,
-        offset: 10000,
+        offset: 1,
         sort: 'asc',
         apikey: API_KEY
     };
@@ -357,7 +357,7 @@ async function getSuccessfulTransactionCountLastMonth(address) {
             startblock: 0,
             endblock: 'latest',
             page: 1,
-            offset: 10000,
+            offset: 1,
             sort: 'asc',
             apikey: API_KEY
         };
@@ -403,7 +403,7 @@ async function getSuccessfulTransactionCountLastYear(address) {
             startblock: 0,
             endblock: 'latest',
             page: 1,
-            offset: 10000,
+            offset: 1,
             sort: 'asc',
             apikey: API_KEY
         };
@@ -509,7 +509,7 @@ async function getTransactionsPerMonth(address, firstTransactionTimestamp, curre
                 startblock: 0,
                 endblock: 'latest',
                 page: 1,
-                offset: 10000,
+                offset: 1,
                 sort: 'asc',
                 starttime: startOfMonth.getTime() / 1000,
                 endtime: endOfMonth.getTime() / 1000,
@@ -545,7 +545,7 @@ async function getAllSuccessfulTransactionsPicture(address) {
         startblock: 0,
         endblock: 'latest',
         page: 1,
-        offset: 10000,
+        offset: 1,
         sort: 'asc',
         apikey: API_KEY
     };
