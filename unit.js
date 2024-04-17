@@ -1,4 +1,6 @@
-const API_KEY = 'ZQW9Q75PC212BH4QV9BP4NAWJSK2S4EHNQ';
+const API_KEY1 = 'ZQW9Q75PC212BH4QV9BP4NAWJSK2S4EHNQ';
+const API_KEY2 = 'TSZREJR1QSJDAG5HDAY97INV1TEDUF2AAD';
+const API_KEY3 = 'U7FCYTBAB5E5E7AWN1D698T3QUYS9N8BDZ';
 const ETH_USD_API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd';
 
 async function getAllSuccessfulTransactions(address) {
@@ -12,7 +14,7 @@ async function getAllSuccessfulTransactions(address) {
         page: 1,
         offset: 10000,
         sort: 'asc',
-        apikey: API_KEY
+        apikey: API_KEY1
     };
 
     try {
@@ -66,7 +68,7 @@ async function getEthBalance(address) {
         action: "balance",
         address: address,
         tag: "latest",
-        apikey: API_KEY
+        apikey: API_KEY1
     };
 
     try {
@@ -111,7 +113,7 @@ async function getAllSuccessfulTransactionsLastMonth(address) {
             page: 1,
             offset: 10000,
             sort: 'asc',
-            apikey: API_KEY
+            apikey: API_KEY1
         };
 
         const response = await axios.get(BASE_URL, { params });
@@ -150,7 +152,7 @@ async function getAllSuccessfulTransactionsLastYear(address) {
             page: 1,
             offset: 10000,
             sort: 'asc',
-            apikey: API_KEY
+            apikey: API_KEY1
         };
 
         const response = await axios.get(BASE_URL, { params });
@@ -199,7 +201,7 @@ async function getWalletAgeInMonths(address) {
             page: 1,
             offset: 1,
             sort: 'asc',
-            apikey: API_KEY
+            apikey: API_KEY2
         };
 
         const response = await axios.get(BASE_URL, { params });
@@ -235,7 +237,7 @@ async function getTotalRejectedTransactions(address) {
         page: 1,
         offset: 10000,
         sort: 'asc',
-        apikey: API_KEY
+        apikey: API_KEY2
     };
 
     try {
@@ -268,7 +270,7 @@ async function getTransactionIntervals(address) {
         page: 1,
         offset: 10000,
         sort: 'asc',
-        apikey: API_KEY
+        apikey: API_KEY2
     };
 
     try {
@@ -317,7 +319,7 @@ async function getTimeSinceLastTransaction(address) {
         page: 1,
         offset: 1, // 只获取最新的一笔交易
         sort: 'desc', // 降序排列，以获取最新的交易
-        apikey: API_KEY
+        apikey: API_KEY2
     };
 
     try {
@@ -362,7 +364,7 @@ async function getSuccessfulTransactionCountLastMonth(address) {
             page: 1,
             offset: 10000,
             sort: 'asc',
-            apikey: API_KEY
+            apikey: API_KEY3
         };
         const response = await axios.get(BASE_URL, { params });
 
@@ -408,7 +410,7 @@ async function getSuccessfulTransactionCountLastYear(address) {
             page: 1,
             offset: 10000,
             sort: 'asc',
-            apikey: API_KEY
+            apikey: API_KEY3
         };
         const response = await axios.get(BASE_URL, { params });
 
@@ -474,7 +476,7 @@ async function getFirstTransactionInfo(address) {
             page: 1,
             offset: 1,
             sort: 'asc',
-            apikey: API_KEY
+            apikey: API_KEY3
         };
         const response = await axios.get(BASE_URL, { params });
 
@@ -517,7 +519,7 @@ async function getTransactionsPerMonth(address, firstTransactionTimestamp, curre
                 sort: 'asc',
                 starttime: startOfMonth.getTime() / 1000,
                 endtime: endOfMonth.getTime() / 1000,
-                apikey: API_KEY
+                apikey: API_KEY3
             };
             const response = await axios.get(BASE_URL, { params });
 
@@ -551,7 +553,7 @@ async function getAllSuccessfulTransactionsPicture(address) {
         page: 1,
         offset: 10000,
         sort: 'asc',
-        apikey: API_KEY
+        apikey: API_KEY3
     };
 
     try {
@@ -597,7 +599,7 @@ async function calculateDailyTransactions(address) {
 }
 async function getTotalSentAmount(address) {
     try {
-        const { successfulTransactions } = await getAllSuccessfulTransactions(address);
+        const { successfulTransactions, successfulTransactionsCount } = await getAllSuccessfulTransactions(address);
 
         // 计算所有成功交易中转出的资金总量
         const totalSentAmount = successfulTransactions.reduce((total, transaction) => {
@@ -616,8 +618,9 @@ async function getTotalSentAmount(address) {
 }
 
 (async () => {
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    const address = accounts[0];
+    // const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    // const address = accounts[0];
+    const address = "0x6BC58Daa01464c9A0a81aEa8145a335e46F24E36";
 
     const { totalValue, successfulTransactionsCount } = await calculateTotalValueOfTransactions(address);
     const balance = await getEthBalance(address);
@@ -638,7 +641,10 @@ async function getTotalSentAmount(address) {
     const lastYearTxCount = await getSuccessfulTransactionCountLastYear(address);
     const averageTxInternal = await getAverageTransactionsPerMonth(address);
     const totalSentAmount = await getTotalSentAmount(address);
-    console.log("totalSentAmount: $" + totalSentAmount)
+    const totalspendAmount = totalSentAmount * ethToUsdRate;
+    // console.log("totalSentAmount: $" + totalSentAmount)
+    console.log("totalspendAmount: $" + totalspendAmount)
+
 
 
     document.getElementById("balance").innerText = removeTrailingZeros(balance.toFixed(6));
@@ -659,12 +665,14 @@ async function getTotalSentAmount(address) {
     const id1 = document.getElementById("id1");
     const id2 = document.getElementById("id2");
 
-    if (totalSentAmount > 1 && totalSentAmount < 100) {
-        id1.textContent = "Middle Activity";
-        id2.textContent = "This wallet has total spendings of less than $100";
-    } else if (totalSentAmount > 100) {
+    if (totalspendAmount > 100) {
         id1.textContent = "Active User";
         id2.textContent = "This wallet has total spendings of more than $100";
+        // 获取图像元素
+        const imgElement = document.getElementById('id3');
+
+        // 设置新的图片路径
+        imgElement.src = 'https://uploads-ssl.webflow.com/65bc5c072835ea18c7eb3466/661f4a302d8c1fb0ae094790_2.png';
     }
 
 
