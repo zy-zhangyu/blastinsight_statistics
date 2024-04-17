@@ -638,7 +638,7 @@ async function getTotalSentAmount(address) {
     const lastYearTxCount = await getSuccessfulTransactionCountLastYear(address);
     const averageTxInternal = await getAverageTransactionsPerMonth(address);
     const totalSentAmount = await getTotalSentAmount(address);
-    // console.log("totalSentAmount" + totalSentAmount)
+    console.log("totalSentAmount: $" + totalSentAmount)
 
 
     document.getElementById("balance").innerText = removeTrailingZeros(balance.toFixed(6));
