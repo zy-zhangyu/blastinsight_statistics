@@ -84,19 +84,37 @@ async function getEthBalance(address) {
         return 0;
     }
 }
-async function getTokenToUsdRate(token_id) {
+// async function getTokenToUsdRate(token_id) {
+//     try {
+//         const response = await fetch(`https://blastinsight-service.zeabur.app/user/${token_id}/getusd`);
+//         if (!response.ok) {
+//             throw new Error('Failed to fetch USD rate for the token');
+//         }
+//         const data = await response.json();
+//         return data.usdRate;
+//     } catch (error) {
+//         console.error('Error:', error);
+//         return 0;
+//     }
+// }
+
+async function getTokenToUsdRate(tokenId) {
     try {
-        const response = await fetch(`https://blastinsight-service.zeabur.app/user/${token_id}/getusd`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch USD rate for the token');
-        }
+        const response = await fetch(`https://blastinsight-service.zeabur.app/user/${tokenId}/getusd`);
         const data = await response.json();
-        return data.usdRate;
+
+        if (response.ok) {
+            const rate = data.rate;
+            return rate
+        } else {
+            throw new Error(data.error);
+        }
     } catch (error) {
-        console.error('Error:', error);
-        return 0;
+        console.error(error);
+        document.getElementById('result').innerText = `请求失败: ${error.message}`;
     }
 }
+
 async function getAllSuccessfulTransactionsLastMonth(address) {
     try {
         // 计算起止时间戳
@@ -626,8 +644,8 @@ async function getTotalSentAmount(address) {
 
     const { totalValue, successfulTransactionsCount } = await calculateTotalValueOfTransactions(address);
     const balance = await getEthBalance(address);
-    const ethToUsdRate = await getTokenToUsdRate('ethereum');
-    // console.log("ethToUsdRate" + ethToUsdRate)
+    const ethToUsdRate = await getTokenToUsdRate('ETH');
+    console.log("ethToUsdRate" + ethToUsdRate)
     const totalValueusd = totalValue * ethToUsdRate;
     const balanceUsd = balance * ethToUsdRate;
     const balanceChange = await getBalanceChange(address);
@@ -674,7 +692,7 @@ async function getTotalSentAmount(address) {
         const imgElement = document.getElementById('id3');
 
         // 设置新的图片路径
-        imgElement.src = 'https://uploads-ssl.webflow.com/65bc5c072835ea18c7eb3466/661f4a302d8c1fb0ae094790_2.png';
+        imgElement.src = 'https://uploads-ssl.webflow.com/65bc5c072835ea18c7eb3466/661f835fbcabed04e34fbdf7_2-removebg-preview.png';
     }
 
 
