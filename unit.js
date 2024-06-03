@@ -328,6 +328,7 @@ async function getTransactionIntervals(address) {
         return { averageInterval: 0, maxInterval: 0 };
     }
 }
+
 async function getTimeSinceLastTransaction(address) {
     const BASE_URL = "https://api.blastscan.io/api";
     const params = {
@@ -637,117 +638,146 @@ async function getTotalSentAmount(address) {
     }
 }
 
-(async () => {
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    const address = accounts[0];
-    // const address = "0x6BC58Daa01464c9A0a81aEa8145a335e46F24E36";
 
-    const { totalValue, successfulTransactionsCount } = await calculateTotalValueOfTransactions(address);
-    const balance = await getEthBalance(address);
-    const ethToUsdRate = await getTokenToUsdRate('ETH');
-    console.log("ethToUsdRate" + ethToUsdRate)
-    const totalValueusd = totalValue * ethToUsdRate;
-    const balanceUsd = balance * ethToUsdRate;
-    const balanceChange = await getBalanceChange(address);
-    const successfulTransactionsLastYear = await getAllSuccessfulTransactionsLastYear(address);
-    const balanceChangeLastYear = successfulTransactionsLastYear.reduce((total, transaction) => {
-        return total + parseFloat(transaction.value) / 10 ** 18;
-    }, 0);
-    const walletAgeInMonths = await getWalletAgeInMonths(address);
-    const rejectedTxNumber = await getTotalRejectedTransactions(address);
-    const { averageInterval, maxInterval } = await getTransactionIntervals(address);
-    const timesinelastTx = await getTimeSinceLastTransaction(address);
-    const lastMonthTxCount = await getSuccessfulTransactionCountLastMonth(address);
-    const lastYearTxCount = await getSuccessfulTransactionCountLastYear(address);
-    const averageTxInternal = await getAverageTransactionsPerMonth(address);
-    const totalSentAmount = await getTotalSentAmount(address);
-    const totalspendAmount = totalSentAmount * ethToUsdRate;
-    // console.log("totalSentAmount: $" + totalSentAmount)
-    console.log("totalspendAmount: $" + totalspendAmount)
+document.addEventListener("DOMContentLoaded", () => {
+    // 创建加载覆盖层和加载提示框
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.id = 'overlay';
 
+    const loaderContainer = document.createElement('div');
+    loaderContainer.className = 'loader';
 
-
-    document.getElementById("balance").innerText = removeTrailingZeros(balance.toFixed(6));
-    document.getElementById("balanceusd").innerText = removeTrailingZeros(balanceUsd.toFixed(2));
-    document.getElementById("totalvalue").innerText = removeTrailingZeros(totalValue.toFixed(4));
-    document.getElementById("totalvalueusd").innerText = removeTrailingZeros(totalValueusd.toFixed(2));
-    document.getElementById("balancechangelastmonth").innerText = removeTrailingZeros(balanceChange.toFixed(4));
-    document.getElementById("balancechangelastyear").innerText = removeTrailingZeros(balanceChangeLastYear.toFixed(4));
-    document.getElementById("walletage").innerText = removeTrailingZeros(walletAgeInMonths);
-    document.getElementById("txsucessnumber").innerText = removeTrailingZeros(successfulTransactionsCount);
-    document.getElementById("rejectedTxNumber").innerText = removeTrailingZeros(rejectedTxNumber);
-    document.getElementById("averageInterval").innerText = removeTrailingZeros(averageInterval.toFixed(3));
-    document.getElementById("maxInterval").innerText = removeTrailingZeros(maxInterval.toFixed(3));
-    document.getElementById("timesinelastTx").innerText = removeTrailingZeros(timesinelastTx.toFixed(3));
-    document.getElementById("lastMonthTxCount").innerText = removeTrailingZeros(lastMonthTxCount);
-    document.getElementById("lastYearTxCount").innerText = removeTrailingZeros(lastYearTxCount);
-    document.getElementById("averageTxInternal").innerText = removeTrailingZeros(averageTxInternal);
-    const id1 = document.getElementById("id1");
-    const id2 = document.getElementById("id2");
-
-    if (totalspendAmount > 100) {
-        id1.textContent = "Active User";
-        id2.textContent = "This wallet has total spendings of more than $100";
-        // 获取图像元素
-        const imgElement = document.getElementById('id3');
-
-        // 设置新的图片路径
-        imgElement.src = 'https://uploads-ssl.webflow.com/65bc5c072835ea18c7eb3466/661f835fbcabed04e34fbdf7_2-removebg-preview.png';
+    // 创建三个加载点
+    for (let i = 0; i < 3; i++) {
+        const loaderDot = document.createElement('div');
+        loaderContainer.appendChild(loaderDot);
     }
 
+    const loadingText = document.createElement('p');
+    loadingText.textContent = 'Statistics are under way...';
 
-    const dailyStats = await calculateDailyTransactions(address);
+    loadingOverlay.appendChild(loaderContainer);
+    loadingOverlay.appendChild(loadingText);
+    document.body.appendChild(loadingOverlay);
 
-    // 准备数据
-    const days = Object.keys(dailyStats);
-    const transactionsData = Object.values(dailyStats).map(day => day.transactions);
+    function showLoading() {
+        loadingOverlay.classList.add('visible');
+    }
 
-    // 创建 Chart.js 实例
-    const ctx = document.getElementById('myChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line', // 使用曲线图
-        data: {
-            labels: days, // 使用日期数组作为标签
-            datasets: [
-                {
+    function hideLoading() {
+        loadingText.textContent = 'Statistics are about to end';
+        setTimeout(() => {
+            loadingOverlay.classList.remove('visible');
+        }, 1500);
+    }
+
+    showLoading();
+
+    (async () => {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const address = accounts[0];
+
+        const { totalValue, successfulTransactionsCount } = await calculateTotalValueOfTransactions(address);
+        const balance = await getEthBalance(address);
+        const ethToUsdRate = await getTokenToUsdRate('ETH');
+        console.log("ethToUsdRate" + ethToUsdRate);
+        const totalValueusd = totalValue * ethToUsdRate;
+        const balanceUsd = balance * ethToUsdRate;
+        const balanceChange = await getBalanceChange(address);
+        const successfulTransactionsLastYear = await getAllSuccessfulTransactionsLastYear(address);
+        const balanceChangeLastYear = successfulTransactionsLastYear.reduce((total, transaction) => {
+            return total + parseFloat(transaction.value) / 10 ** 18;
+        }, 0);
+        const walletAgeInMonths = await getWalletAgeInMonths(address);
+        const rejectedTxNumber = await getTotalRejectedTransactions(address);
+        const { averageInterval, maxInterval } = await getTransactionIntervals(address);
+        const timesinelastTx = await getTimeSinceLastTransaction(address);
+        const lastMonthTxCount = await getSuccessfulTransactionCountLastMonth(address);
+        const lastYearTxCount = await getSuccessfulTransactionCountLastYear(address);
+        const averageTxInternal = await getAverageTransactionsPerMonth(address);
+        const totalSentAmount = await getTotalSentAmount(address);
+        const totalspendAmount = totalSentAmount * ethToUsdRate;
+        console.log("totalspendAmount: $" + totalspendAmount);
+
+        document.getElementById("balance").innerText = removeTrailingZeros(balance.toFixed(6));
+        document.getElementById("balanceusd").innerText = removeTrailingZeros(balanceUsd.toFixed(2));
+        document.getElementById("totalvalue").innerText = removeTrailingZeros(totalValue.toFixed(4));
+        document.getElementById("totalvalueusd").innerText = removeTrailingZeros(totalValueusd.toFixed(2));
+        document.getElementById("balancechangelastmonth").innerText = removeTrailingZeros(balanceChange.toFixed(4));
+        document.getElementById("balancechangelastyear").innerText = removeTrailingZeros(balanceChangeLastYear.toFixed(4));
+        document.getElementById("walletage").innerText = removeTrailingZeros(walletAgeInMonths);
+        document.getElementById("txsucessnumber").innerText = removeTrailingZeros(successfulTransactionsCount);
+        document.getElementById("rejectedTxNumber").innerText = removeTrailingZeros(rejectedTxNumber);
+        document.getElementById("averageInterval").innerText = removeTrailingZeros(averageInterval.toFixed(3));
+        document.getElementById("maxInterval").innerText = removeTrailingZeros(maxInterval.toFixed(3));
+        document.getElementById("timesinelastTx").innerText = removeTrailingZeros(timesinelastTx.toFixed(3));
+        document.getElementById("lastMonthTxCount").innerText = removeTrailingZeros(lastMonthTxCount);
+        document.getElementById("lastYearTxCount").innerText = removeTrailingZeros(lastYearTxCount);
+        document.getElementById("averageTxInternal").innerText = removeTrailingZeros(averageTxInternal);
+
+        const id1 = document.getElementById("id1");
+        const id2 = document.getElementById("id2");
+
+        if (totalspendAmount > 100) {
+            id1.textContent = "Active User";
+            id2.textContent = "This wallet has total spendings of more than $100";
+
+            const imgElement = document.getElementById('id3');
+            imgElement.src = 'https://uploads-ssl.webflow.com/65bc5c072835ea18c7eb3466/661f835fbcabed04e34fbdf7_2-removebg-preview.png';
+        }
+
+        const dailyStats = await calculateDailyTransactions(address);
+        const days = Object.keys(dailyStats);
+        const transactionsData = Object.values(dailyStats).map(day => day.transactions);
+
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: days,
+                datasets: [{
                     data: transactionsData,
                     borderColor: 'blue',
-                    fill: false, // 不填充区域
-                },
-            ],
-        },
-        options: {
-            plugins: {
-                legend: {
-                    display: false // 不显示图例
-                },
+                    fill: false,
+                }],
             },
-            scales: {
-                x: {
-                    display: false, // 不显示横坐标
+            options: {
+                plugins: {
+                    legend: {
+                        display: false
+                    },
                 },
-                y: {
-                    display: false, // 不显示纵坐标
+                scales: {
+                    x: {
+                        display: false
+                    },
+                    y: {
+                        display: false
+                    },
                 },
-            },
-            elements: {
-                point: {
-                    radius: 0 // 设置点的大小为0，即不显示点
+                elements: {
+                    point: {
+                        radius: 0
+                    },
                 },
+                layout: {
+                    padding: {
+                        top: 10,
+                        bottom: 10,
+                        left: 10,
+                        right: 10
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: true
             },
-            layout: {
-                padding: {
-                    top: 10,
-                    bottom: 10,
-                    left: 10,
-                    right: 10
-                }
-            },
-            responsive: true, // 允许响应式调整大小
-            maintainAspectRatio: true // 不维持纵横比
-        },
-    });
-})();
+        });
+
+        hideLoading();
+    })();
+});
+
+
 
 
 
