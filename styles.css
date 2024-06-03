@@ -4,8 +4,9 @@
     --button-color: #e74c3c;
     --button-hover-color: #c0392b;
     --text-color: #fff;
-    --animation-duration: 1.4s;
-    --fade-duration: 1s;
+    --animation-duration: 1.8s;
+    --fade-duration: 1.8s;
+    /* 增加动画持续时间 */
 }
 
 #loadButton {
@@ -38,6 +39,8 @@
     align-items: center;
     visibility: hidden;
     opacity: 0;
+    z-index: 1000;
+    /* 确保覆盖页面内容 */
     transition: visibility 0s, opacity 0.5s;
 }
 
@@ -98,7 +101,8 @@
         opacity: 0;
     }
 
-    50% {
+    25%,
+    75% {
         opacity: 1;
     }
 }
